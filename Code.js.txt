@@ -1,0 +1,637 @@
+/**
+ * Mandatory function for serving the HTML as a web app.
+ * @return {HtmlOutput} The HTML content to be served.
+ */
+function doGet() {
+  const html = HtmlService.createTemplateFromFile('index');
+  return html.evaluate()
+      .setTitle('Network Graph')
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+}
+
+/**
+ * Fetches the network data.
+ * @return {object} An object containing two arrays: nodes and connections.
+ */
+function getNetworkData() {
+  const nodes = [
+    // === DEKLEIN (Yellow nodes - Top region) ===
+    // Far Left - NPC Connection
+    {id: "SLVP-D", x: 100, y: 250, shape: "box", label: "SLVP-D\nBranch"},
+    
+    // Western Deklein Chain
+    {id: "5-N2EY", x: 180, y: 250, label: "5-N2EY\nDeklein"},
+    {id: "E-BYOS", x: 260, y: 250, label: "E-BYOS\nDeklein"},
+    {id: "E02-IK", x: 340, y: 250, label: "E02-IK\nDeklein"},
+    
+    // Northern Central Deklein
+    {id: "Y-1918", x: 500, y: 100, shape: "box", label: "Y-1918\nNull"},
+    {id: "UJY-HE", x: 500, y: 170, label: "UJY-HE\nDeklein"},
+    {id: "RG9-7U", x: 400, y: 170, label: "RG9-7U\nDeklein"},
+    {id: "CZDJ-1", x: 500, y: 240, label: "CZDJ-1\nDeklein"},
+    {id: "A4L-A2", x: 500, y: 310, label: "A4L-A2\nDeklein"},
+    {id: "UEJX-G", x: 400, y: 310, label: "UEJX-G\nDeklein"},
+    {id: "U-TJ7Y", x: 500, y: 380, label: "U-TJ7Y\nDeklein"},
+    {id: "X3-PBC", x: 500, y: 450, label: "X3-PBC\nDeklein"},
+    
+    // Central Deklein Cluster
+    {id: "J1AU-9", x: 570, y: 450, label: "J1AU-9\nDeklein"},
+    {id: "MZ1E-P", x: 640, y: 450, label: "MZ1E-P\nDeklein"},
+    {id: "3T7-M8", x: 710, y: 450, label: "3T7-M8\nDeklein"},
+    
+    // Eastern Upper Deklein
+    {id: "XCBK-X", x: 850, y: 170, label: "XCBK-X\nDeklein"},
+    {id: "GY5-26", x: 710, y: 240, label: "GY5-26\nDeklein"},
+    {id: "9CK-KZ", x: 990, y: 240, label: "9CK-KZ\nDeklein"},
+    {id: "VPLL-N", x: 850, y: 310, label: "VPLL-N\nDeklein"},
+    {id: "N2IS-B", x: 710, y: 380, label: "N2IS-B\nDeklein"},
+    {id: "WUZ-WM", x: 850, y: 380, label: "WUZ-WM\nDeklein"},
+    {id: "4N-BUI", x: 990, y: 380, label: "4N-BUI\nDeklein"},
+    {id: "5S-KXA", x: 1130, y: 310, label: "5S-KXA\nDeklein"},
+    {id: "43B-O1", x: 1130, y: 380, label: "43B-O1\nDeklein"},
+    
+    // Middle-Lower Deklein
+    {id: "OWXT-5", x: 780, y: 450, label: "OWXT-5\nDeklein"},
+    {id: "0V0R-R", x: 710, y: 520, label: "0V0R-R\nDeklein"},
+    {id: "LEK-N5", x: 780, y: 520, label: "LEK-N5\nDeklein"},
+    {id: "AGG-NR", x: 640, y: 590, label: "AGG-NR\nDeklein"},
+    {id: "O-2RNZ", x: 570, y: 660, label: "O-2RNZ\nDeklein"},
+    {id: "3JN9-Q", x: 500, y: 730, label: "3JN9-Q\nDeklein"},
+    
+    // South-Central Deklein
+    {id: "YZ-UKA", x: 570, y: 800, label: "YZ-UKA\nDeklein"},
+    {id: "E-FIC0", x: 640, y: 730, label: "E-FIC0\nDeklein"},
+    {id: "85-B52", x: 710, y: 800, label: "85-B52\nDeklein"},
+    {id: "3QE-9Q", x: 570, y: 870, label: "3QE-9Q\nDeklein"},
+    {id: "Z2ZR-5", x: 780, y: 660, label: "Z2ZR-5\nDeklein"},
+    {id: "MXX5-9", x: 780, y: 590, label: "MXX5-9\nDeklein"},
+    {id: "E3UY-6", x: 850, y: 730, label: "E3UY-6\nDeklein"},
+    
+    // Southeastern Deklein
+    {id: "RO0-AF", x: 920, y: 450, label: "RO0-AF\nDeklein"},
+    {id: "ZOYW-O", x: 850, y: 520, label: "ZOYW-O\nDeklein"},
+    {id: "5W3-DG", x: 990, y: 520, label: "5W3-DG\nDeklein"},
+    {id: "7T6P-C", x: 990, y: 590, label: "7T6P-C\nDeklein"},
+    {id: "LT-DRO", x: 990, y: 660, label: "LT-DRO\nDeklein"},
+    {id: "8S28-3", x: 990, y: 730, label: "8S28-3\nDeklein"},
+    
+    // Eastern Deklein Chain
+    {id: "JU-OWQ", x: 850, y: 590, label: "JU-OWQ\nDeklein"},
+    {id: "S-DN5M", x: 920, y: 590, label: "S-DN5M\nDeklein"},
+    {id: "2O9G-D", x: 850, y: 660, label: "2O9G-D\nDeklein"},
+    {id: "KSF-Z2", x: 920, y: 730, label: "KSF-Z2\nDeklein"},
+    {id: "I3O-3A", x: 920, y: 800, label: "I3O-3A\nDeklein"},
+    {id: "NC-N3F", x: 990, y: 870, label: "NC-N3F\nDeklein"},
+    {id: "X-Z4DA", x: 990, y: 940, label: "X-Z4DA\nDeklein"},
+    {id: "C7Y-7Z", x: 990, y: 1010, label: "C7Y-7Z\nDeklein"},
+    
+    // Far Eastern Deklein
+    {id: "II-5O9", x: 1060, y: 870, label: "II-5O9\nDeklein"},
+    {id: "VFK-IV", x: 1130, y: 940, label: "VFK-IV\nDeklein"},
+    {id: "2-KF56", x: 1060, y: 1010, label: "2-KF56\nDeklein"},
+    {id: "2R-CRW", x: 1130, y: 1080, label: "2R-CRW\nDeklein"},
+    {id: "YAC-XJ", x: 990, y: 1080, label: "YAC-XJ\nDeklein"},
+    {id: "CCP-US", x: 1200, y: 1150, label: "CCP-US\nDeklein"},
+    
+    // Southern Deklein
+    {id: "0P-F3K", x: 920, y: 1080, label: "0P-F3K\nDeklein"},
+    {id: "TXME-A", x: 920, y: 1150, label: "TXME-A\nDeklein"},
+    {id: "FMB-JP", x: 850, y: 1080, label: "FMB-JP\nDeklein"},
+    {id: "XCF-8N", x: 780, y: 1150, label: "XCF-8N\nDeklein"},
+    {id: "CU9-T0", x: 850, y: 1220, label: "CU9-T0\nDeklein"},
+    {id: "AD-CBT", x: 920, y: 1290, label: "AD-CBT\nDeklein"},
+    {id: "94-H3F", x: 710, y: 1220, label: "94-H3F\nDeklein"},
+    {id: "QP0-WI", x: 780, y: 1290, label: "QP0-WI\nDeklein"},
+    {id: "FO8M-2", x: 710, y: 1430, label: "FO8M-2\nDeklein"},
+    {id: "R8S-1K", x: 640, y: 1500, label: "R8S-1K\nDeklein"},
+    {id: "T-945F", x: 710, y: 1500, label: "T-945F\nDeklein"},
+    {id: "4U9O-Z", x: 780, y: 1500, label: "4U9O-Z\nDeklein"},
+    {id: "9-R6GU", x: 920, y: 1430, shape: "box", label: "9-R6GU\nVenal"},
+    
+    // === FADE (Green nodes - Left-Central region) ===
+    // Northwestern Fade
+    {id: "I-UUI5", x: 260, y: 800, label: "I-UUI5\nFade"},
+    {id: "MPPA-A", x: 340, y: 870, label: "MPPA-A\nFade"},
+    {id: "GME-PQ", x: 420, y: 870, label: "GME-PQ\nFade"},
+    {id: "X5-UME", x: 420, y: 940, label: "X5-UME\nFade"},
+    {id: "8QMQ-E", x: 340, y: 940, label: "8QMQ-E\nFade"},
+    
+    // Central Fade
+    {id: "C4C-Z4", x: 500, y: 1010, label: "C4C-Z4\nFade"},
+    {id: "L-C307", x: 570, y: 1080, label: "L-C307\nFade"},
+    {id: "K4YZ-Y", x: 640, y: 1010, label: "K4YZ-Y\nFade"},
+    {id: "X36Y-G", x: 710, y: 1080, label: "X36Y-G\nFade"},
+    {id: "O1Y-ED", x: 710, y: 940, label: "O1Y-ED\nFade"},
+    {id: "L-SCBU", x: 780, y: 940, label: "L-SCBU\nFade"},
+    {id: "VRH-H7", x: 780, y: 1150, label: "VRH-H7\nFade"},
+    {id: "O-CNPR", x: 850, y: 1220, label: "O-CNPR\nFade"},
+    
+    // Eastern Fade
+    {id: "DW-T2I", x: 920, y: 1360, label: "DW-T2I\nFade"},
+    {id: "P-33KR", x: 990, y: 1360, label: "P-33KR\nFade"},
+    {id: "DOGH-Q", x: 1060, y: 1290, label: "DOGH-Q\nFade"},
+    {id: "HHK-VL", x: 1130, y: 1360, label: "HHK-VL\nFade"},
+    {id: "CR-IFM", x: 1060, y: 1430, label: "CR-IFM\nFade"},
+    {id: "E-9ORY", x: 1130, y: 1500, label: "E-9ORY\nFade"},
+    {id: "C8-CHY", x: 1200, y: 1570, label: "C8-CHY\nFade"},
+    {id: "ROIR-Y", x: 1270, y: 1640, shape: "box", label: "ROIR-Y\nPure Blind"},
+    
+    // Southern Fade
+    {id: "0-ARF0", x: 340, y: 1290, label: "0-ARF0\nFade"},
+    {id: "C-OK0R", x: 420, y: 1290, label: "C-OK0R\nFade"},
+    {id: "8W-OSE", x: 500, y: 1360, label: "8W-OSE\nFade"},
+    {id: "W0Y-IQ", x: 420, y: 1430, label: "W0Y-IQ\nFade"},
+    {id: "YKSC-A", x: 570, y: 1290, label: "YKSC-A\nFade"},
+    {id: "FIO1-8", x: 640, y: 1360, label: "FIO1-8\nFade"},
+    {id: "E9KD-N", x: 710, y: 1430, label: "E9KD-N\nFade"},
+    {id: "6RCQ-V", x: 780, y: 1500, shape: "box", label: "6RCQ-V\nCloud Ring"},
+    
+    // === PURE BLIND (Blue nodes - Bottom-Right region) ===
+    // LN-LBL Constellation
+    {id: "7X-VKB", x: 850, y: 1640, label: "7X-VKB\nPure Blind"},
+    {id: "P-2TTL", x: 920, y: 1640, label: "P-2TTL\nPure Blind"},
+    {id: "B-9C24", x: 990, y: 1640, label: "B-9C24\nPure Blind"},
+    {id: "E-2Z2X", x: 850, y: 1710, label: "E-2Z2X\nPure Blind"},
+    {id: "R0RZ-H", x: 850, y: 1780, label: "R0RZ-H\nPure Blind"},
+    {id: "O-A6YN", x: 920, y: 1710, label: "O-A6YN\nPure Blind"},
+    
+    // 0A-73B Constellation
+    {id: "KUSR-W", x: 850, y: 1850, label: "KUSR-W\nPure Blind"},
+    {id: "H1I-J33", x: 850, y: 1920, label: "H1I-J33\nPure Blind"},
+    {id: "Y-C3EQ", x: 850, y: 1990, label: "Y-C3EQ\nPure Blind"},
+    {id: "7D-OSQ", x: 780, y: 2060, label: "7D-OSQ\nPure Blind"},
+    {id: "0GV-AS", x: 920, y: 2060, label: "0GV-AS\nPure Blind"},
+    {id: "UI-82E", x: 920, y: 2130, label: "UI-82E\nPure Blind"},
+    {id: "Z-Y7R7", x: 780, y: 2130, shape: "box", label: "Z-Y7R7\nCloud Ring"},
+    
+    // 304Z-R Constellation
+    {id: "GA-P6C", x: 1130, y: 1640, label: "GA-P6C\nPure Blind"},
+    {id: "F-NMX8", x: 1130, y: 1710, label: "F-NMX8\nPure Blind"},
+    {id: "7RM-N0", x: 1200, y: 1710, label: "7RM-N0\nPure Blind"},
+    {id: "ZKYV-W", x: 1130, y: 1780, label: "ZKYV-W\nPure Blind"},
+    {id: "S-MDYI", x: 1200, y: 1780, label: "S-MDYI\nPure Blind"},
+    {id: "FWA-4V", x: 1130, y: 1850, label: "FWA-4V\nPure Blind"},
+    {id: "RZC-I6", x: 1200, y: 1920, label: "RZC-I6\nPure Blind"},
+    
+    // S4GH-I Constellation
+    {id: "TF8-U", x: 990, y: 1990, label: "TF8-U\nPure Blind"},
+    {id: "M0-WPY", x: 1060, y: 2060, label: "M0-WPY\nPure Blind"},
+    {id: "Y2-6EA", x: 1130, y: 2130, label: "Y2-6EA\nPure Blind"},
+    {id: "D2-HOS", x: 1200, y: 2200, label: "D2-HOS\nPure Blind"},
+    {id: "R0H-MY", x: 1270, y: 2200, label: "R0H-MY\nPure Blind"},
+    {id: "DT-TCD", x: 1130, y: 2270, label: "DT-TCD\nPure Blind"},
+    {id: "HP5S-G", x: 1270, y: 2270, label: "HP5S-G\nPure Blind"},
+    {id: "Mantenaut", x: 1340, y: 2270, shape: "box", label: "Mantenaut\nPlacid"},
+    
+    // NPC Lowsec Chain
+    {id: "BDV3-T", x: 1410, y: 1990, label: "BDV3-T\nPure Blind"},
+    {id: "WW-KGD", x: 1480, y: 2060, label: "WW-KGD\nPure Blind"},
+    {id: "XQ-PXU", x: 1410, y: 2130, label: "XQ-PXU\nPure Blind"},
+    {id: "M-YCD4", x: 1340, y: 2130, label: "M-YCD4\nPure Blind"},
+    {id: "Q-5211", x: 1410, y: 2200, label: "Q-5211\nPure Blind"},
+    {id: "CR-AQH", x: 1480, y: 2200, label: "CR-AQH\nPure Blind"},
+    {id: "R-2R0G", x: 1340, y: 2270, label: "R-2R0G\nPure Blind"},
+    {id: "EW0K-K", x: 1410, y: 2340, label: "EW0K-K\nPure Blind"},
+    {id: "EC-P8R", x: 1340, y: 2410, label: "EC-P8R\nPure Blind"},
+    {id: "G-M4I8", x: 1480, y: 2410, label: "G-M4I8\nPure Blind"},
+    {id: "Q3PI-4", x: 1550, y: 2480, label: "Q3PI-4\nPure Blind"},
+    {id: "Torrinos", x: 1340, y: 2550, shape: "box", label: "Torrinos\nLonetrek"},
+    {id: "Saranen", x: 1620, y: 2550, shape: "box", label: "Saranen\nLonetrek"},
+    
+    // === UWU ONLY / BRANCH SYSTEMS (Far right) ===
+    // WMP-OF Constellation
+    {id: "U-INPD", x: 1200, y: 1290, label: "U-INPD\nPure Blind"},
+    {id: "DK-FXK", x: 1270, y: 1360, label: "DK-FXK\nPure Blind"},
+    {id: "A8L-CS", x: 1340, y: 1430, label: "A8L-CS\nPure Blind"},
+    {id: "ZJET-E", x: 1410, y: 1430, label: "ZJET-E\nPure Blind"},
+    {id: "M-76XI", x: 1480, y: 1500, label: "M-76XI\nPure Blind"},
+    {id: "C-H9X7", x: 1410, y: 1570, label: "C-H9X7\nPure Blind"},
+    {id: "ION-FG", x: 1550, y: 1640, label: "ION-FG\nPure Blind"},
+    
+    // MDM8-J & U8-CWA Constellation
+    {id: "D7T-C0", x: 1130, y: 1640, label: "D7T-C0\nPure Blind"},
+    {id: "KI-TL0", x: 1060, y: 1710, label: "KI-TL0\nPure Blind"},
+    {id: "EL8-4Q", x: 1130, y: 1780, label: "EL8-4Q\nPure Blind"},
+    {id: "JC-YX8", x: 1060, y: 1850, label: "JC-YX8\nPure Blind"},
+    {id: "N-H32Y", x: 1200, y: 1850, label: "N-H32Y\nPure Blind"},
+    {id: "5-9WNU", x: 1270, y: 1920, label: "5-9WNU\nPure Blind"},
+    {id: "12YA-2", x: 1340, y: 1990, label: "12YA-2\nPure Blind"},
+    {id: "RD-G2R", x: 920, y: 1920, label: "RD-G2R\nPure Blind"},
+    
+    // === BRANCH (Top right) ===
+    {id: "SZ6-TA", x: 1410, y: 100, label: "SZ6-TA\nBranch"},
+    {id: "RZU-ON", x: 1480, y: 170, label: "RZU-ON\nBranch"},
+    {id: "MR4-MY", x: 1410, y: 240, label: "MR4-MY\nBranch"},
+    {id: "B-XJX4", x: 1340, y: 240, label: "B-XJX4\nBranch"},
+    {id: "H1-ESN", x: 1410, y: 310, label: "H1-ESN\nBranch"},
+    {id: "D-A637", x: 1480, y: 310, label: "D-A637\nBranch"},
+    {id: "7UTB-F", x: 1410, y: 380, label: "7UTB-F\nBranch"},
+    {id: "RAI-0E", x: 1410, y: 450, shape: "box", label: "RAI-0E\nTenal"},
+    {id: "TQLM-0", x: 1620, y: 100, shape: "box", label: "TQLM-0\nOuter Ring"}
+  ];
+
+const connections = [
+  // === DEKLEIN CONNECTIONS ===
+  // Northern chain
+  {from: "Y-1918", to: "UJY-HE"},
+  {from: "UJY-HE", to: "RG9-7U"},
+  {from: "UJY-HE", to: "CZDJ-1"},
+  {from: "CZDJ-1", to: "A4L-A2"},
+  {from: "A4L-A2", to: "UEJX-G"},
+  {from: "A4L-A2", to: "U-TJ7Y"},
+  {from: "U-TJ7Y", to: "X3-PBC"},
+  
+  // X3-PBC connections
+  {from: "X3-PBC", to: "J1AU-9"},
+  {from: "J1AU-9", to: "MZ1E-P"},
+  {from: "MZ1E-P", to: "3T7-M8"},
+  
+  // Eastern Deklein cluster
+  {from: "XCBK-X", to: "GY5-26"},
+  {from: "XCBK-X", to: "9CK-KZ"},
+  {from: "XCBK-X", to: "VPLL-N"},
+  {from: "XCBK-X", to: "4N-BUI"},
+  {from: "GY5-26", to: "9CK-KZ"},
+  {from: "GY5-26", to: "VPLL-N"},
+  {from: "9CK-KZ", to: "VPLL-N"},
+  {from: "9CK-KZ", to: "4N-BUI"},
+  {from: "9CK-KZ", to: "5S-KXA"},
+  {from: "VPLL-N", to: "N2IS-B"},
+  {from: "VPLL-N", to: "WUZ-WM"},
+  {from: "VPLL-N", to: "4N-BUI"},
+  {from: "N2IS-B", to: "3T7-M8"},
+  {from: "WUZ-WM", to: "3T7-M8"},
+  {from: "WUZ-WM", to: "4N-BUI"},
+  {from: "WUZ-WM", to: "43B-O1"},
+  {from: "WUZ-WM", to: "OWXT-5"},
+  {from: "4N-BUI", to: "43B-O1"},
+  
+  // Middle Deklein
+  {from: "OWXT-5", to: "0V0R-R"},
+  {from: "OWXT-5", to: "LEK-N5"},
+  {from: "0V0R-R", to: "AGG-NR"},
+  {from: "AGG-NR", to: "O-2RNZ"},
+  {from: "O-2RNZ", to: "3JN9-Q"},
+  {from: "LEK-N5", to: "E3UY-6"},
+  
+  // South-Central Deklein
+  {from: "YZ-UKA", to: "E-FIC0"},
+  {from: "YZ-UKA", to: "85-B52"},
+  {from: "E-FIC0", to: "3QE-9Q"},
+  {from: "85-B52", to: "Z2ZR-5"},
+  {from: "Z2ZR-5", to: "MXX5-9"},
+  {from: "MXX5-9", to: "JU-OWQ"},
+  
+  // Southeastern Deklein
+  {from: "RO0-AF", to: "ZOYW-O"},
+  {from: "RO0-AF", to: "5W3-DG"},
+  {from: "RO0-AF", to: "7T6P-C"},
+  {from: "ZOYW-O", to: "3QE-9Q", dashes: true},
+  {from: "5W3-DG", to: "7T6P-C"},
+  {from: "5W3-DG", to: "LT-DRO"},
+  {from: "LT-DRO", to: "8S28-3"},
+  
+  // Eastern chain
+  {from: "JU-OWQ", to: "2O9G-D"},
+  {from: "JU-OWQ", to: "KSF-Z2"},
+  {from: "2O9G-D", to: "S-DN5M"},
+  {from: "2O9G-D", to: "I3O-3A"},
+  {from: "S-DN5M", to: "NC-N3F"},
+  {from: "I3O-3A", to: "II-5O9"},
+  {from: "NC-N3F", to: "X-Z4DA"},
+  {from: "X-Z4DA", to: "C7Y-7Z"},
+  {from: "II-5O9", to: "X-Z4DA"},
+  {from: "II-5O9", to: "VFK-IV"},
+  {from: "VFK-IV", to: "2-KF56"},
+  {from: "VFK-IV", to: "2R-CRW"},
+  {from: "2-KF56", to: "YAC-XJ"},
+  {from: "2R-CRW", to: "CCP-US"},
+  {from: "YAC-XJ", to: "CCP-US"},
+  
+  // Southern Deklein
+  {from: "KSF-Z2", to: "FMB-JP"},
+  {from: "FMB-JP", to: "0P-F3K"},
+  {from: "FMB-JP", to: "TXME-A"},
+  {from: "FMB-JP", to: "XCF-8N"},
+  {from: "FMB-JP", to: "CU9-T0"},
+  {from: "TXME-A", to: "CCP-US"},
+  {from: "XCF-8N", to: "94-H3F"},
+  {from: "XCF-8N", to: "CU9-T0"},
+  {from: "CU9-T0", to: "AD-CBT"},
+  {from: "94-H3F", to: "QP0-WI"},
+  {from: "QP0-WI", to: "FO8M-2"},
+  {from: "FO8M-2", to: "R8S-1K"},
+  {from: "FO8M-2", to: "T-945F"},
+  {from: "FO8M-2", to: "4U9O-Z"},
+  {from: "4U9O-Z", to: "AD-CBT"},
+  {from: "9-R6GU", to: "TXME-A", dashes: true},
+  {from: "9-R6GU", to: "AD-CBT", dashes: true},
+  
+  // Western Deklein to NPC
+  {from: "SLVP-D", to: "5-N2EY"},
+  {from: "5-N2EY", to: "E-BYOS"},
+  {from: "E-BYOS", to: "E02-IK"},
+  
+  // === FADE CONNECTIONS ===
+  // Northwestern Fade
+  {from: "I-UUI5", to: "MPPA-A"},
+  {from: "MPPA-A", to: "GME-PQ"},
+  {from: "MPPA-A", to: "X5-UME"},
+  {from: "GME-PQ", to: "8QMQ-E"},
+  {from: "X5-UME", to: "C4C-Z4"},
+  
+  // Central Fade
+  {from: "C4C-Z4", to: "L-C307"},
+  {from: "L-C307", to: "K4YZ-Y"},
+  {from: "L-C307", to: "X36Y-G"},
+  {from: "K4YZ-Y", to: "O1Y-ED"},
+  {from: "K4YZ-Y", to: "X36Y-G"},
+  {from: "O1Y-ED", to: "L-SCBU"},
+  {from: "X36Y-G", to: "VRH-H7"},
+  {from: "VRH-H7", to: "O-CNPR"},
+  
+  // Eastern Fade
+  {from: "O-CNPR", to: "DW-T2I"},
+  {from: "DW-T2I", to: "P-33KR"},
+  {from: "P-33KR", to: "DOGH-Q"},
+  {from: "DOGH-Q", to: "HHK-VL"},
+  {from: "HHK-VL", to: "CR-IFM"},
+  {from: "CR-IFM", to: "E-9ORY"},
+  {from: "E-9ORY", to: "C8-CHY"},
+  {from: "C8-CHY", to: "ROIR-Y"},
+  
+  // Southern Fade
+  {from: "0-ARF0", to: "C-OK0R"},
+  {from: "C-OK0R", to: "8W-OSE"},
+  {from: "C-OK0R", to: "YKSC-A"},
+  {from: "8W-OSE", to: "W0Y-IQ"},
+  {from: "8W-OSE", to: "FIO1-8"},
+  {from: "YKSC-A", to: "FIO1-8"},
+  {from: "FIO1-8", to: "E9KD-N"},
+  {from: "E9KD-N", to: "6RCQ-V"},
+  
+  // === PURE BLIND CONNECTIONS ===
+  // LN-LBL Constellation
+  {from: "7X-VKB", to: "P-2TTL"},
+  {from: "P-2TTL", to: "B-9C24"},
+  {from: "P-2TTL", to: "E-2Z2X"},
+  {from: "P-2TTL", to: "O-A6YN"},
+  {from: "E-2Z2X", to: "R0RZ-H"},
+  {from: "R0RZ-H", to: "KUSR-W"},
+  
+  // 0A-73B Constellation
+  {from: "KUSR-W", to: "H1I-J33"},
+  {from: "H1I-J33", to: "Y-C3EQ"},
+  {from: "Y-C3EQ", to: "7D-OSQ"},
+  {from: "Y-C3EQ", to: "0GV-AS"},
+  {from: "0GV-AS", to: "UI-82E"},
+  {from: "7D-OSQ", to: "Z-Y7R7"},
+  
+  // 304Z-R Constellation
+  {from: "GA-P6C", to: "F-NMX8"},
+  {from: "F-NMX8", to: "7RM-N0"},
+  {from: "F-NMX8", to: "ZKYV-W"},
+  {from: "7RM-N0", to: "S-MDYI"},
+  {from: "ZKYV-W", to: "FWA-4V"},
+  {from: "FWA-4V", to: "RZC-I6"},
+  {from: "RZC-I6", to: "M0-WPY"},
+  
+  // S4GH-I Constellation
+  {from: "TF8-U", to: "M0-WPY"},
+  {from: "M0-WPY", to: "D2-HOS"},
+  {from: "D2-HOS", to: "Y2-6EA"},
+  {from: "D2-HOS", to: "R0H-MY"},
+  {from: "D2-HOS", to: "HP5S-G"},
+  {from: "R0H-MY", to: "Mantenaut"},
+  {from: "DT-TCD", to: "HP5S-G"},
+  
+  // NPC Lowsec Chain
+  {from: "BDV3-T", to: "WW-KGD"},
+  {from: "WW-KGD", to: "XQ-PXU"},
+  {from: "XQ-PXU", to: "M-YCD4"},
+  {from: "XQ-PXU", to: "Q-5211"},
+  {from: "M-YCD4", to: "R-2R0G"},
+  {from: "Q-5211", to: "CR-AQH"},
+  {from: "Q-5211", to: "R-2R0G"},
+  {from: "R-2R0G", to: "G-M4I8"},
+  {from: "EW0K-K", to: "EC-P8R"},
+  {from: "EW0K-K", to: "G-M4I8"},
+  {from: "G-M4I8", to: "Q3PI-4"},
+  {from: "EC-P8R", to: "Torrinos"},
+  {from: "Q3PI-4", to: "Saranen"},
+  
+  // === UWU ONLY CLUSTER CONNECTIONS ===
+  // WMP-OF Constellation
+  {from: "U-INPD", to: "DK-FXK"},
+  {from: "U-INPD", to: "ZJET-E"},
+  {from: "DK-FXK", to: "A8L-CS"},
+  {from: "A8L-CS", to: "C-H9X7"},
+  {from: "ZJET-E", to: "M-76XI"},
+  {from: "M-76XI", to: "C-H9X7"},
+  {from: "C-H9X7", to: "ION-FG"},
+  
+  // MDM8-J & U8-CWA
+  {from: "D7T-C0", to: "KI-TL0"},
+  {from: "KI-TL0", to: "EL8-4Q"},
+  {from: "KI-TL0", to: "JC-YX8"},
+  {from: "EL8-4Q", to: "N-H32Y"},
+  {from: "EL8-4Q", to: "5-9WNU"},
+  {from: "5-9WNU", to: "12YA-2"},
+  {from: "RD-G2R", to: "KI-TL0"},
+  {from: "RD-G2R", to: "5-9WNU"},
+  
+  // === BRANCH CONNECTIONS ===
+  {from: "SZ6-TA", to: "RZU-ON"},
+  {from: "RZU-ON", to: "TQLM-0"},
+  {from: "RZU-ON", to: "MR4-MY"},
+  {from: "MR4-MY", to: "B-XJX4"},
+  {from: "MR4-MY", to: "H1-ESN"},
+  {from: "H1-ESN", to: "D-A637"},
+  {from: "H1-ESN", to: "7UTB-F"},
+  {from: "7UTB-F", to: "RAI-0E"},
+  
+  // === INTER-REGION CONNECTIONS (Major Links) ===
+  // Deklein to Fade
+  {from: "UJY-HE", to: "YZ-UKA"},
+  {from: "GY5-26", to: "YZ-UKA"},
+  {from: "A4L-A2", to: "E-FIC0"},
+  {from: "J1AU-9", to: "E3UY-6"},
+  {from: "E3UY-6", to: "L-C307"},
+  {from: "O-2RNZ", to: "GME-PQ"},
+  {from: "3JN9-Q", to: "I-UUI5"},
+  {from: "E-FIC0", to: "O-CNPR"},
+  {from: "II-5O9", to: "O-CNPR"},
+  {from: "0-ARF0", to: "C4C-Z4"},
+  {from: "85-B52", to: "HHK-VL"},
+  {from: "3QE-9Q", to: "I3O-3A"},
+  
+  // Deklein to Pure Blind
+  {from: "8S28-3", to: "KUSR-W"},
+  {from: "8S28-3", to: "K4YZ-Y"},
+  {from: "X3-PBC", to: "X5-UME"},
+  {from: "WUZ-WM", to: "FMB-JP"},
+  {from: "43B-O1", to: "2R-CRW"},
+  {from: "OWXT-5", to: "XCF-8N"},
+  
+  // Fade to Pure Blind
+  {from: "FIO1-8", to: "FO8M-2"},
+  {from: "E9KD-N", to: "R8S-1K"},
+  {from: "2-KF56", to: "P-33KR"},
+  {from: "VRH-H7", to: "YAC-XJ"},
+  {from: "E-9ORY", to: "VFK-IV"},
+  {from: "C8-CHY", to: "TXME-A"},
+  
+  // Pure Blind Internal Long Range
+  {from: "DOGH-Q", to: "U-INPD"},
+  {from: "12YA-2", to: "ION-FG"},
+  {from: "12YA-2", to: "BDV3-T"},
+  
+  // Other Cross-Region
+  {from: "VPLL-N", to: "MXX5-9"},
+  {from: "0V0R-R", to: "2O9G-D"},
+  {from: "RO0-AF", to: "LEK-N5", dashes: true},
+  {from: "MZ1E-P", to: "JU-OWQ"},
+  {from: "K4YZ-Y", to: "X36Y-G"}
+];
+
+  return { nodes, connections };
+}
+
+// =========================================================================
+// !!! ROUTE FINDING FUNCTIONS !!!
+// These functions implement the Dijkstra's algorithm needed for route calculation.
+// =========================================================================
+
+/**
+ * Finds the shortest route between a start and end system using Dijkstra's algorithm.
+ * @param {string} startSystem - The ID of the starting system (e.g., 'E-FIC0').
+ * @param {string} endSystem - The ID of the destination system (e.g., 'VFK-IV').
+ * @returns {object} An object containing the route array or an error message.
+ */
+function findShortestRoute(startSystem, endSystem) {
+    // 1. Get the raw network data
+    const networkData = getNetworkData();
+    const nodes = networkData.nodes;
+    const connections = networkData.connections;
+
+    // 2. Build a graph structure for Dijkstra's
+    const graph = {};
+    nodes.forEach(node => {
+        graph[node.id] = {};
+    });
+
+    connections.forEach(connection => {
+        // --- IMPORTANT: Weighting Logic ---
+        // For a simple shortest path in jumps, the weight is 1.
+        const weight = connection.weight || 1; 
+
+        // Extract connection type/color info to pass back to the client for visualization
+        const connectionDetails = { 
+            weight: weight, 
+            type: connection.type || 'Stargate', // Default type
+            color: connection.color,
+            dashes: connection.dashes
+        };
+
+        // Connections are typically bidirectional (undirected graph)
+        graph[connection.from][connection.to] = connectionDetails;
+        graph[connection.to][connection.from] = connectionDetails;
+    });
+
+    // 3. Run Dijkstra's Algorithm
+    const route = dijkstra(graph, startSystem, endSystem);
+
+    if (!route) {
+        // If the route is null, the nodes are disconnected.
+        return { error: `Could not find a path from ${startSystem} to ${endSystem}. Are they disconnected?` };
+    }
+
+    return { route: route };
+}
+
+/**
+ * Implements Dijkstra's algorithm to find the shortest path in a graph.
+ * @param {object} graph - The graph object created by findShortestRoute.
+ * @param {string} startNode - The starting node ID.
+ * @param {string} endNode - The destination node ID.
+ * @returns {Array<object>|null} Array of steps with system and connection type, or null if no path found.
+ */
+function dijkstra(graph, startNode, endNode) {
+    const distances = {};
+    const previous = {};
+    let unvisited = new Set(Object.keys(graph));
+    let path = [];
+
+    // Initialize distances: 0 for start, Infinity for all others
+    Object.keys(graph).forEach(node => {
+        distances[node] = (node === startNode) ? 0 : Infinity;
+    });
+
+    // Main loop
+    while (unvisited.size > 0) {
+        // Find the unvisited node with the smallest distance
+        let currentNode = null;
+        let minDistance = Infinity;
+
+        unvisited.forEach(node => {
+            if (distances[node] < minDistance) {
+                minDistance = distances[node];
+                currentNode = node;
+            }
+        });
+
+        if (currentNode === null || distances[currentNode] === Infinity) {
+            // Cannot reach the remaining nodes
+            break; 
+        }
+
+        unvisited.delete(currentNode);
+
+        if (currentNode === endNode) {
+            // Path found. Reconstruct and return it.
+            let current = endNode;
+            while (current) {
+                if (previous[current]) {
+                    const prev = previous[current];
+                    // Look up the connection details from the graph structure
+                    // Need to check both directions because we only store details on the primary edge.
+                    const connectionDetails = graph[prev][current] || graph[current][prev]; 
+                    
+                    path.unshift({ 
+                        system: current, 
+                        // Use connection details from the previous node to the current node
+                        type: connectionDetails.type,
+                        color: connectionDetails.color,
+                        dashes: connectionDetails.dashes
+                    });
+                } else {
+                    // This is the starting node
+                    path.unshift({ 
+                        system: current, 
+                        type: 'Start',
+                        color: null,
+                        dashes: null
+                    });
+                }
+                current = previous[current];
+            }
+            return path;
+        }
+
+        // Update distances for neighbors
+        for (const neighbor in graph[currentNode]) {
+            // Check if the neighbor is still unvisited
+            if (unvisited.has(neighbor)) {
+                const connectionDetails = graph[currentNode][neighbor];
+                const newDistance = distances[currentNode] + connectionDetails.weight;
+
+                if (newDistance < distances[neighbor]) {
+                    distances[neighbor] = newDistance;
+                    previous[neighbor] = currentNode;
+                }
+            }
+        }
+    }
+
+    return null; // No path found
+}

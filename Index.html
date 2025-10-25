@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>Network Graph - Clean Interface</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.2/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'MyCustomFont';
+            src: url('https://cdn.jsdelivr.net/gh/obon-beep/eve-jumpbridge/Shentox.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            font-family: 'MyCustomFont', Arial, sans-serif;
+        }
+
+        #mynetwork {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #f0f0f0;
+            z-index: 0;
+        }
+
+        #controlPanel {
+            position: fixed;
+            top: 10px;
+            right: -310px;
+            width: 300px;
+            max-height: 95vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            box-sizing: border-box;
+            z-index: 10;
+            overflow-y: auto; 
+            transition: right 0.3s ease-in-out; 
+        }
+
+        #controlPanel.panel-open { right: 10px; }
+
+        #menuToggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: transparent; 
+            border: none;
+            cursor: pointer;
+            z-index: 20; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;     
+            padding: 0; 
+        }
+
+        #menuToggle img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .panel-section { margin-bottom: 20px; padding: 10px; border: 1px solid #eee; border-radius: 8px; }
+        .input-row { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        h3 { margin: 0 0 10px 0; color: #663399; font-size: 16px; border-bottom: 2px solid #9370DB; padding-bottom: 5px; }
+        .search-input { padding: 10px 15px; border: 2px solid #9370DB; border-radius: 20px; font-size: 14px; width: 100%; outline: none; text-transform: uppercase; box-sizing: border-box; }
+        .button { padding: 10px 20px; background-color: #9370DB; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold; transition: background-color 0.2s; width: 100%; box-sizing: border-box; }
+        .button-secondary { background-color: #ddd; color: #333; }
+        .search-result { display: block; margin-top: 10px; padding: 5px 10px; font-size: 13px; border-radius: 4px; background-color: #f9f9f9; }
+        .route-info p, .route-step, .step-label { font-family: 'MyCustomFont', Arial, sans-serif; }
+
+        @media (max-width: 768px) {
+            #controlPanel { width: calc(100% - 20px); max-height: 80vh; }
+            #menuToggle { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="mynetwork"></div>
+
+    <button id="menuToggle" aria-label="Toggle Controls">
+        <img src="https://raw.githubusercontent.com/obon-beep/eve-jumpbridge/main/shh-logo-1.png" alt="SHH Logo">
+    </button>
+    
+    <div id="controlPanel"> 
+        <h3>System Search</h3>
+
+        <div class="panel-section">
+            <div class="input-row">
+                <input type="text" id="focusInput" class="search-input" placeholder="System (e.g., VFK or E-FIC0)" />
+                <button id="focusButton" class="button">Go to System</button>
+            </div>
+            <span id="focusResult" class="search-result"></span>
+        </div>
+        
+        <h3>Route Finder</h3>
+        <div class="panel-section">
+            <div class="input-row">
+                <input type="text" id="fromInput" class="search-input" placeholder="From System (e.g., L-C307)" />
+                <input type="text" id="toInput" class="search-input" placeholder="To System (e.g., YZ-UKA)" />
+                <button id="findRouteButton" class="button">Find Route</button>
+                <button id="clearButton" class="button button-secondary">Clear All</button>
+            </div>
+            <span id="searchResult" class="search-result"></span>
+        </div>
+
+        <h3>View Controls</h3>
+        <div class="panel-section">
+            <button id="fitButton" class="button">Zoom to Fit Map</button>
+        </div>
+        
+        <h3>Route Information</h3>
+        <div id="routeContent" class="panel-section">
+            <div class="no-route">
+                Enter start and end systems to find a route
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let network = null;
+        const nodesData = new vis.DataSet();
+        const edgesData = new vis.DataSet();
+        let originalData = { nodes: [], connections: [] };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('menuToggle');
+            const controlPanel = document.getElementById('controlPanel');
+            const fitButton = document.getElementById('fitButton'); 
+            const focusButton = document.getElementById('focusButton'); 
+            const focusInput = document.getElementById('focusInput');
+            const fromInput = document.getElementById('fromInput');
+            const toInput = document.getElementById('toInput');
+            const findRouteButton = document.getElementById('findRouteButton');
+            const clearButton = document.getElementById('clearButton');
+
+            toggleButton.addEventListener('click', () => {
+                controlPanel.classList.toggle('panel-open');
+                if (controlPanel.classList.contains('panel-open')) controlPanel.scrollTop = 0;
+            });
+
+            focusButton.addEventListener('click', () => { focusOnNode(focusInput.value); });
+            focusInput.addEventListener('keypress', e => { if(e.key === 'Enter') focusOnNode(focusInput.value); });
+
+            findRouteButton.addEventListener('click', () => { findRoute(fromInput.value, toInput.value); });
+            fromInput.addEventListener('keypress', e => { if(e.key==='Enter' && toInput.value) findRoute(fromInput.value, toInput.value); });
+            toInput.addEventListener('keypress', e => { if(e.key==='Enter' && fromInput.value) findRoute(fromInput.value, toInput.value); });
+
+            clearButton.addEventListener('click', clearRoute);
+
+            if(fitButton) fitButton.addEventListener('click', () => { if(network) network.fit({animation:true}); });
+
+            google.script.run.withSuccessHandler(drawNetwork).getNetworkData();
+        });
+
+        function drawNetwork(data) {
+            originalData = data;
+
+            nodesData.clear();
+            nodesData.add(data.nodes.map(n => ({
+                id: n.id,
+                label: n.label || n.id,
+                x: n.x,
+                y: n.y,
+                fixed: true,
+                shape: n.shape || 'ellipse',
+                color: { border:'#2B7CE9', background:'#D2E5FF' },
+                font: { color: '#000', size: 10, face:'MyCustomFont' },
+                zIndex: 1
+            })));
+
+            edgesData.clear();
+            edgesData.add(data.connections.map((c, i) => ({
+                id: 'e'+i,
+                from: c.from,
+                to: c.to,
+                smooth: { enabled:true, type:'continuous' },
+                dashes: c.dashed||false,
+                color: { color:'#0056B3' },
+                width: c.width||1,
+                type: c.type||'Stargate',
+                zIndex: 0
+            })));
+
+            const container = document.getElementById('mynetwork');
+            network = new vis.Network(container, { nodes: nodesData, edges: edgesData }, {
+                layout:{improvedLayout:false},
+                physics:{enabled:false},
+                interaction:{hover:true, zoomView:true, dragView:true},
+                nodes:{borderWidth:2, size:25, font:{size:12, face:'MyCustomFont'}}
+            });
+
+            network.fit();
+        }
+
+        function clearRoute() {
+            nodesData.forEach(node => nodesData.update({id:node.id, color:{border:'#2B7CE9',background:'#D2E5FF'}, borderWidth:2}));
+            edgesData.forEach(edge => edgesData.update({id:edge.id, color:{color:'#0056B3'}, width:1, dashes:false, zIndex:0}));
+            document.getElementById('searchResult').textContent='';
+            document.getElementById('focusResult').textContent='';
+            document.getElementById('fromInput').value='';
+            document.getElementById('toInput').value='';
+            document.getElementById('routeContent').innerHTML=`<div class="no-route">Enter start and end systems to find a route</div>`;
+            if(network) network.fit();
+        }
+
+        // 🧭 Updated Safe Functions
+        function focusOnNode(inputName) {
+            if(!network) return;
+            inputName = inputName.trim().toUpperCase();
+            if(!inputName) return;
+            console.log("Focusing on", inputName);
+            google.script.run.withSuccessHandler(res => {
+                document.getElementById('focusResult').textContent = res ? `Focused on ${inputName}` : `System not found`;
+            }).focusOnNode(inputName);
+        }
+
+        function findRoute(from, to) {
+            if(!from || !to) return;
+            from = from.trim().toUpperCase();
+            to = to.trim().toUpperCase();
+            console.log("Finding route", from, to);
+            document.getElementById('searchResult').textContent = 'Searching...';
+            google.script.run.withSuccessHandler(route => {
+                if (!route || route.length === 0) {
+                    document.getElementById('searchResult').textContent = 'No route found.';
+                    return;
+                }
+                document.getElementById('searchResult').textContent = `Route found: ${route.join(' → ')}`;
+            }).findShortestRoute(from, to);
+        }
+    </script>
+</body>
+</html>
